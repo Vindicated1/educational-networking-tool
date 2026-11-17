@@ -1,36 +1,39 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# University of Ibadan Educational Networking Tool
 
-## Getting Started
+## Run locally
 
-First, run the development server:
+Use Node.js 20 or later:
 
-```bash
+```powershell
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000). The first server request creates a SQLite database at `data/education-network.db` and seeds demo records.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Demo sign-in:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Role | Email | Password |
+| --- | --- | --- |
+| Student | `20234567@stu.ui.edu.ng` | `password123` |
+| Admin | `admin@ui.edu.ng` | `admin123` |
 
-## Learn More
+Use these credentials only for local demonstrations. New student accounts can be registered with `@stu.ui.edu.ng` or `@dlc.ui.edu.ng`; faculty accounts use `@ui.edu.ng`. Faculty registration assigns the faculty role based on the email domain; it does not independently verify identity.
 
-To learn more about Next.js, take a look at the following resources:
+## Working features
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- Password-hashed registration and login with an HTTP-only session cookie.
+- SQLite persistence for users, forum threads, replies, votes, resources, project interests, and moderation decisions.
+- Resource upload of PDF/DOCX files up to 10 MB. Files are stored under `data/uploads` and are downloadable from the resource library.
+- Faculty/admin-only answer verification and moderation access.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+The interface uses the University of Ibadan logo published on the official [ui.edu.ng](https://ui.edu.ng) website.
 
-## Deploy on Vercel
+The SQLite database and uploaded files are local persistent storage intended for development and single-instance demonstrations. For production or multiple application instances, replace them with a managed database and shared object storage. Configure a strong `JWT_SECRET` in `.env.local` before running in production; production authentication fails closed if it is missing.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Validation
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```powershell
+npm run lint
+npm run build
+```

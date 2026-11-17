@@ -1,0 +1,156 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1320" viewBox="0 0 1800 1320" role="img" aria-labelledby="title description">
+  <title id="title">Current SQLite database ERD</title>
+  <desc id="description">Implemented tables and relationships for the University of Ibadan Educational Networking Tool. Dashed boxes are requested entities not implemented as database tables.</desc>
+  <defs>
+    <style>
+      text { font-family: Arial, Helvetica, sans-serif; fill: #172033; }
+      .title { font-size: 30px; font-weight: 700; }
+      .subtitle { font-size: 15px; fill: #475569; }
+      .table { fill: #ffffff; stroke: #1d4ed8; stroke-width: 2; }
+      .table-head { fill: #eaf2ff; }
+      .table-name { font-size: 18px; font-weight: 700; fill: #153a73; }
+      .column { font-size: 14px; }
+      .key { font-weight: 700; fill: #153a73; }
+      .relationship { fill: none; stroke: #475569; stroke-width: 2.5; }
+      .cardinality { font-size: 14px; font-weight: 700; fill: #334155; }
+      .relation-label { font-size: 13px; fill: #475569; }
+      .note { font-size: 13px; fill: #334155; }
+      .planned { fill: #f8fafc; stroke: #94a3b8; stroke-width: 2; stroke-dasharray: 8 6; }
+      .planned-head { fill: #e2e8f0; }
+      .planned-name { font-size: 17px; font-weight: 700; fill: #475569; }
+      .planned-text { font-size: 13px; fill: #64748b; }
+    </style>
+  </defs>
+  <rect width="1800" height="1320" fill="#f8fafc"/>
+  <text x="50" y="52" class="title">University of Ibadan Educational Networking Tool — Current SQLite ERD</text>
+  <text x="50" y="82" class="subtitle">Solid blue entities and relationship lines reflect the schema currently implemented in src/lib/db.ts.</text>
+
+  <g aria-label="User table">
+    <rect x="70" y="135" width="390" height="238" rx="10" class="table"/>
+    <path d="M80 135h370a10 10 0 0 1 10 10v35H70v-35a10 10 0 0 1 10-10z" class="table-head"/>
+    <text x="90" y="166" class="table-name">User (users)</text>
+    <text x="92" y="203" class="column"><tspan class="key">PK</tspan><tspan dx="12">id INTEGER AUTOINCREMENT</tspan></text>
+    <text x="92" y="229" class="column">full_name TEXT NOT NULL</text>
+    <text x="92" y="255" class="column">email TEXT NOT NULL UNIQUE</text>
+    <text x="92" y="281" class="column">password_hash TEXT NOT NULL</text>
+    <text x="92" y="307" class="column">role TEXT NOT NULL DEFAULT 'Student'</text>
+    <text x="92" y="333" class="column">created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP</text>
+  </g>
+
+  <g aria-label="Thread table">
+    <rect x="570" y="135" width="420" height="290" rx="10" class="table"/>
+    <path d="M580 135h400a10 10 0 0 1 10 10v35H570v-35a10 10 0 0 1 10-10z" class="table-head"/>
+    <text x="590" y="166" class="table-name">Thread (threads)</text>
+    <text x="592" y="203" class="column"><tspan class="key">PK</tspan><tspan dx="12">id INTEGER AUTOINCREMENT</tspan></text>
+    <text x="592" y="229" class="column">title TEXT NOT NULL</text>
+    <text x="592" y="255" class="column">course TEXT NOT NULL</text>
+    <text x="592" y="281" class="column">category TEXT NOT NULL</text>
+    <text x="592" y="307" class="column">author TEXT NOT NULL</text>
+    <text x="592" y="333" class="column">body TEXT NOT NULL</text>
+    <text x="592" y="359" class="column">votes INTEGER NOT NULL DEFAULT 0</text>
+    <text x="592" y="385" class="column">created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP</text>
+  </g>
+
+  <g aria-label="Comment table">
+    <rect x="1110" y="135" width="420" height="265" rx="10" class="table"/>
+    <path d="M1120 135h400a10 10 0 0 1 10 10v35h-420v-35a10 10 0 0 1 10-10z" class="table-head"/>
+    <text x="1130" y="166" class="table-name">Comment (comments)</text>
+    <text x="1132" y="203" class="column"><tspan class="key">PK</tspan><tspan dx="12">id INTEGER AUTOINCREMENT</tspan></text>
+    <text x="1132" y="229" class="column"><tspan class="key">FK</tspan><tspan dx="12">thread_id INTEGER NOT NULL</tspan></text>
+    <text x="1132" y="255" class="column">author TEXT NOT NULL</text>
+    <text x="1132" y="281" class="column">role TEXT NOT NULL</text>
+    <text x="1132" y="307" class="column">body TEXT NOT NULL</text>
+    <text x="1132" y="333" class="column">verified INTEGER NOT NULL DEFAULT 0</text>
+    <text x="1132" y="359" class="column">created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP</text>
+  </g>
+
+  <g aria-label="Moderation item table">
+    <rect x="70" y="495" width="390" height="265" rx="10" class="table"/>
+    <path d="M80 495h370a10 10 0 0 1 10 10v35H70v-35a10 10 0 0 1 10-10z" class="table-head"/>
+    <text x="90" y="526" class="table-name">ModerationItem (moderation_items)</text>
+    <text x="92" y="563" class="column"><tspan class="key">PK</tspan><tspan dx="12">id INTEGER AUTOINCREMENT</tspan></text>
+    <text x="92" y="589" class="column">type TEXT NOT NULL</text>
+    <text x="92" y="615" class="column">title TEXT NOT NULL</text>
+    <text x="92" y="641" class="column">owner TEXT NOT NULL</text>
+    <text x="92" y="667" class="column">urgency TEXT NOT NULL</text>
+    <text x="92" y="693" class="column">status TEXT NOT NULL</text>
+    <text x="92" y="719" class="column">created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP</text>
+  </g>
+
+  <g aria-label="Project table">
+    <rect x="570" y="585" width="420" height="265" rx="10" class="table"/>
+    <path d="M580 585h400a10 10 0 0 1 10 10v35H570v-35a10 10 0 0 1 10-10z" class="table-head"/>
+    <text x="590" y="616" class="table-name">Project (projects)</text>
+    <text x="592" y="653" class="column"><tspan class="key">PK</tspan><tspan dx="12">id INTEGER AUTOINCREMENT</tspan></text>
+    <text x="592" y="679" class="column">title TEXT NOT NULL</text>
+    <text x="592" y="705" class="column">summary TEXT NOT NULL</text>
+    <text x="592" y="731" class="column">required_skills TEXT NOT NULL (JSON text)</text>
+    <text x="592" y="757" class="column">owner TEXT NOT NULL</text>
+    <text x="592" y="783" class="column">match INTEGER NOT NULL DEFAULT 0</text>
+    <text x="592" y="809" class="column">created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP</text>
+  </g>
+
+  <g aria-label="Project interest table">
+    <rect x="1110" y="585" width="420" height="213" rx="10" class="table"/>
+    <path d="M1120 585h400a10 10 0 0 1 10 10v35h-420v-35a10 10 0 0 1 10-10z" class="table-head"/>
+    <text x="1130" y="616" class="table-name">ProjectInterest (project_interests)</text>
+    <text x="1132" y="653" class="column"><tspan class="key">PK</tspan><tspan dx="12">id INTEGER AUTOINCREMENT</tspan></text>
+    <text x="1132" y="679" class="column"><tspan class="key">FK</tspan><tspan dx="12">project_id INTEGER NOT NULL</tspan></text>
+    <text x="1132" y="705" class="column"><tspan class="key">FK</tspan><tspan dx="12">user_id INTEGER NOT NULL</tspan></text>
+    <text x="1132" y="731" class="column">created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP</text>
+    <text x="1132" y="765" class="column">UNIQUE(project_id, user_id)</text>
+  </g>
+
+  <g aria-label="Resource table">
+    <rect x="70" y="895" width="580" height="320" rx="10" class="table"/>
+    <path d="M80 895h560a10 10 0 0 1 10 10v35H70v-35a10 10 0 0 1 10-10z" class="table-head"/>
+    <text x="90" y="926" class="table-name">Resource (resources)</text>
+    <text x="92" y="963" class="column"><tspan class="key">PK</tspan><tspan dx="12">id INTEGER AUTOINCREMENT</tspan></text>
+    <text x="92" y="989" class="column">title TEXT NOT NULL</text>
+    <text x="92" y="1015" class="column">course TEXT NOT NULL</text>
+    <text x="92" y="1041" class="column">session TEXT NOT NULL</text>
+    <text x="92" y="1067" class="column">format TEXT NOT NULL</text>
+    <text x="92" y="1093" class="column">size TEXT NOT NULL</text>
+    <text x="92" y="1119" class="column">uploaded_by TEXT NOT NULL</text>
+    <text x="92" y="1145" class="column">created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP</text>
+    <text x="92" y="1171" class="column">file_name TEXT NULL; storage_key TEXT NULL</text>
+  </g>
+
+  <g aria-label="Requested entities not implemented as tables">
+    <rect x="750" y="895" width="1000" height="145" rx="10" class="planned"/>
+    <path d="M760 895h980a10 10 0 0 1 10 10v35H750v-35a10 10 0 0 1 10-10z" class="planned-head"/>
+    <text x="775" y="926" class="planned-name">Requested entities not implemented as database tables</text>
+    <text x="775" y="968" class="planned-text">Department — no table in the current schema.</text>
+    <text x="775" y="994" class="planned-text">Course — stored as TEXT on threads and resources; no Course table or foreign keys.</text>
+    <text x="775" y="1020" class="planned-text">Vote — represented only by threads.votes INTEGER; no per-user Vote table.</text>
+    <text x="1250" y="968" class="planned-text">Notification — no table in the current schema.</text>
+  </g>
+
+  <g aria-label="Thread to comment one-to-many relationship">
+    <path d="M990 285H1110" class="relationship"/>
+    <text x="1000" y="273" class="cardinality">1</text>
+    <text x="1080" y="273" class="cardinality">0..*</text>
+    <text x="1000" y="310" class="relation-label">has comments</text>
+  </g>
+
+  <g aria-label="User to project interest one-to-many relationship">
+    <path d="M460 330H520V460H1320V585" class="relationship"/>
+    <text x="474" y="320" class="cardinality">1</text>
+    <text x="1300" y="580" class="cardinality">0..*</text>
+    <text x="760" y="450" class="relation-label">User expresses project interest</text>
+  </g>
+
+  <g aria-label="Project to project interest one-to-many relationship">
+    <path d="M990 715H1110" class="relationship"/>
+    <text x="1000" y="703" class="cardinality">1</text>
+    <text x="1080" y="703" class="cardinality">0..*</text>
+    <text x="1000" y="740" class="relation-label">receives interest</text>
+  </g>
+
+  <g aria-label="Schema notes">
+    <text x="750" y="1095" class="note">ProjectInterest joins User and Project: together they form a many-to-many relationship.</text>
+    <text x="750" y="1125" class="note">Other text fields (threads.author, resources.uploaded_by, projects.owner) are not user foreign keys.</text>
+    <text x="750" y="1155" class="note">SQLite types are shown as declared. FK = foreign key; PK = primary key.</text>
+    <text x="750" y="1185" class="note">Solid blue = implemented table. Dashed gray = requested but absent from current database.</text>
+  </g>
+</svg>
