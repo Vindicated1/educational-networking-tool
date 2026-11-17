@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { COOKIE_NAME, signToken, verifyPassword } from "@/lib/auth";
+import { assertJwtSecretConfigured, COOKIE_NAME, signToken, verifyPassword } from "@/lib/auth";
 import { getUserByEmail, serializeUser } from "@/lib/db";
 
 export async function POST(request: Request) {
@@ -11,7 +11,18 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Email and password are required." }, { status: 400 });
   }
 
-  const user = getUserByEmail(email);
+  let user;
+  try {
+    assertJwtSecretConfigured();
+    user = await getUserByEmail(email);
+  } catch (error) {
+    console.error("Login service is unavailable.", error);
+    return NextResponse.json(
+      { error: "Login is temporarily unavailable. Check the server database and JWT configuration." },
+      { status: 503 },
+    );
+  }
+
   if (!user) {
     return NextResponse.json({ error: "Invalid email or password." }, { status: 401 });
   }
@@ -20,12 +31,18 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid email or password." }, { status: 401 });
   }
 
-  const token = signToken({
-    userId: user.id,
-    email: user.email,
-    fullName: user.full_name,
-    role: user.role,
-  });
+  let token: string;
+  try {
+    token = signToken({
+      userId: user.id,
+      email: user.email,
+      fullName: user.full_name,
+      role: user.role,
+    });
+  } catch (error) {
+    console.error("Could not create a login session.", error);
+    return NextResponse.json({ error: "Login is temporarily unavailable. Check JWT configuration." }, { status: 503 });
+  }
 
   const response = NextResponse.json({ user: serializeUser(user) });
   response.cookies.set(COOKIE_NAME, token, {

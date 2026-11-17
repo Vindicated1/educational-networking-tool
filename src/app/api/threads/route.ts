@@ -1,10 +1,15 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { COOKIE_NAME, verifyToken } from "@/lib/auth";
-import { db, getThreads } from "@/lib/db";
+import { createThread, getThreads } from "@/lib/db";
 
 export async function GET() {
-  return NextResponse.json({ threads: getThreads() });
+  try {
+    return NextResponse.json({ threads: await getThreads() });
+  } catch (error) {
+    console.error("Could not load forum threads.", error);
+    return NextResponse.json({ error: "Forum data is temporarily unavailable." }, { status: 503 });
+  }
 }
 
 export async function POST(request: Request) {
@@ -38,22 +43,17 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Choose Question or Discussion for the category." }, { status: 400 });
   }
 
-  const result = db
-    .prepare(
-      `INSERT INTO threads (title, course, category, author, body, votes) VALUES (?, ?, ?, ?, ?, 0)`,
-    )
-    .run(title, course, category, sessionUser.fullName, body);
-
-  const thread = {
-    id: Number(result.lastInsertRowid),
-    title,
-    course,
-    category,
-    author: sessionUser.fullName,
-    body,
-    votes: 0,
-    comments: [],
-  };
-
-  return NextResponse.json({ thread });
+  try {
+    const thread = await createThread({
+      title,
+      course,
+      category,
+      author: sessionUser.fullName,
+      body,
+    });
+    return NextResponse.json({ thread });
+  } catch (error) {
+    console.error("Could not create forum thread.", error);
+    return NextResponse.json({ error: "The thread could not be saved right now." }, { status: 503 });
+  }
 }

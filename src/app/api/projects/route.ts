@@ -1,13 +1,19 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { COOKIE_NAME, verifyToken } from "@/lib/auth";
-import { db, getProjects } from "@/lib/db";
+import { addProjectInterest, getProjects, projectExists } from "@/lib/db";
 
 export async function GET() {
-  return NextResponse.json({ projects: getProjects().map((project) => ({
-    ...project,
-    requiredSkills: JSON.parse(project.required_skills || "[]"),
-  })) });
+  try {
+    const projects = await getProjects();
+    return NextResponse.json({ projects: projects.map((project) => ({
+      ...project,
+      requiredSkills: JSON.parse(project.required_skills || "[]"),
+    })) });
+  } catch (error) {
+    console.error("Could not load projects.", error);
+    return NextResponse.json({ error: "Project data is temporarily unavailable." }, { status: 503 });
+  }
 }
 
 export async function POST(request: Request) {
@@ -29,11 +35,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Select a valid project." }, { status: 400 });
   }
 
-  const projectExists = db.prepare("SELECT id FROM projects WHERE id = ?").get(projectId);
-  if (!projectExists) {
-    return NextResponse.json({ error: "Project not found." }, { status: 404 });
-  }
+  try {
+    if (!(await projectExists(projectId))) {
+      return NextResponse.json({ error: "Project not found." }, { status: 404 });
+    }
 
-  db.prepare("INSERT OR IGNORE INTO project_interests (project_id, user_id) VALUES (?, ?)").run(projectId, user.userId);
-  return NextResponse.json({ success: true });
+    await addProjectInterest(projectId, user.userId);
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Could not save project interest.", error);
+    return NextResponse.json({ error: "Project interest is temporarily unavailable." }, { status: 503 });
+  }
 }

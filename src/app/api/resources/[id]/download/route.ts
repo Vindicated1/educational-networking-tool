@@ -1,7 +1,5 @@
-import { readFile } from "node:fs/promises";
-import path from "node:path";
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { downloadResourceFile, getResourceById } from "@/lib/db";
 
 type RouteContext = { params: Promise<{ id: string }> };
 
@@ -12,18 +10,21 @@ export async function GET(_request: Request, { params }: RouteContext) {
     return NextResponse.json({ error: "Resource not found." }, { status: 404 });
   }
 
-  const resource = db
-    .prepare("SELECT file_name, storage_key FROM resources WHERE id = ?")
-    .get(resourceId) as { file_name: string | null; storage_key: string | null } | undefined;
+  let resource;
+  try {
+    resource = await getResourceById(resourceId);
+  } catch (error) {
+    console.error(`Could not load resource metadata ${resourceId}.`, error);
+    return NextResponse.json({ error: "Resource data is temporarily unavailable." }, { status: 503 });
+  }
 
   if (!resource?.storage_key || !resource.file_name) {
     return NextResponse.json({ error: "This sample resource has no downloadable file." }, { status: 404 });
   }
 
-  const filePath = path.join(process.cwd(), "data", "uploads", path.basename(resource.storage_key));
   let contents: Buffer;
   try {
-    contents = await readFile(filePath);
+    contents = await downloadResourceFile(resource.storage_key);
   } catch (error) {
     console.error(`Could not read uploaded resource ${resourceId}.`, error);
     return NextResponse.json({ error: "The resource file is unavailable." }, { status: 500 });

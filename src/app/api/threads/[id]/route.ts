@@ -1,7 +1,13 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { COOKIE_NAME, verifyToken } from "@/lib/auth";
-import { db, getThreads } from "@/lib/db";
+import {
+  addComment,
+  getThreads,
+  incrementThreadVotes,
+  threadExists,
+  verifyComment,
+} from "@/lib/db";
 
 type RouteContext = { params: Promise<{ id: string }> };
 
@@ -24,41 +30,46 @@ export async function POST(request: Request, { params }: RouteContext) {
     return NextResponse.json({ error: "Thread not found." }, { status: 404 });
   }
 
-  const thread = db.prepare("SELECT id FROM threads WHERE id = ?").get(threadId);
-  if (!thread) {
-    return NextResponse.json({ error: "Thread not found." }, { status: 404 });
-  }
-
   const payload = await request.json().catch(() => ({}));
   const action = String(payload.action ?? "");
 
-  if (action === "upvote") {
-    db.prepare("UPDATE threads SET votes = votes + 1 WHERE id = ?").run(threadId);
-  } else if (action === "reply") {
-    const body = String(payload.body ?? "").trim();
-    if (!body) {
-      return NextResponse.json({ error: "Reply cannot be empty." }, { status: 400 });
-    }
-
-    db.prepare(
-      "INSERT INTO comments (thread_id, author, role, body) VALUES (?, ?, ?, ?)",
-    ).run(threadId, user.fullName, user.role, body);
-  } else if (action === "verify") {
-    if (user.role !== "Faculty" && user.role !== "Admin") {
-      return NextResponse.json({ error: "Only faculty and admins can verify answers." }, { status: 403 });
-    }
-
-    const commentId = Number(payload.commentId);
-    const result = db
-      .prepare("UPDATE comments SET verified = 1 WHERE id = ? AND thread_id = ?")
-      .run(commentId, threadId);
-    if (result.changes === 0) {
-      return NextResponse.json({ error: "Reply not found." }, { status: 404 });
-    }
-  } else {
+  if (!["upvote", "reply", "verify"].includes(action)) {
     return NextResponse.json({ error: "Unknown thread action." }, { status: 400 });
   }
 
-  const updatedThread = getThreads().find((item) => item.id === threadId);
-  return NextResponse.json({ thread: updatedThread });
+  const body = String(payload.body ?? "").trim();
+  if (action === "reply" && !body) {
+    return NextResponse.json({ error: "Reply cannot be empty." }, { status: 400 });
+  }
+  if (action === "verify" && user.role !== "Faculty" && user.role !== "Admin") {
+    return NextResponse.json({ error: "Only faculty and admins can verify answers." }, { status: 403 });
+  }
+
+  try {
+    if (!(await threadExists(threadId))) {
+      return NextResponse.json({ error: "Thread not found." }, { status: 404 });
+    }
+
+    if (action === "upvote") {
+      await incrementThreadVotes(threadId);
+    } else if (action === "reply") {
+      await addComment({
+        thread_id: threadId,
+        author: user.fullName,
+        role: user.role,
+        body,
+      });
+    } else {
+      const commentId = Number(payload.commentId);
+      if (!Number.isInteger(commentId) || !(await verifyComment(threadId, commentId))) {
+        return NextResponse.json({ error: "Reply not found." }, { status: 404 });
+      }
+    }
+
+    const updatedThread = (await getThreads()).find((item) => item.id === threadId);
+    return NextResponse.json({ thread: updatedThread });
+  } catch (error) {
+    console.error("Could not update forum thread.", error);
+    return NextResponse.json({ error: "The thread action could not be saved right now." }, { status: 503 });
+  }
 }

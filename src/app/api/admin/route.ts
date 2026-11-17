@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { COOKIE_NAME, verifyToken } from "@/lib/auth";
-import { db, getModerationQueue } from "@/lib/db";
+import { getModerationQueue, updateModerationStatus } from "@/lib/db";
 
 export async function GET() {
   const cookieStore = await cookies();
@@ -11,15 +11,22 @@ export async function GET() {
     return NextResponse.json({ error: "Authentication required." }, { status: 401 });
   }
 
+  let sessionUser;
   try {
-    const sessionUser = verifyToken(token);
-    if (sessionUser.role !== "Admin" && sessionUser.role !== "Faculty") {
-      return NextResponse.json({ error: "Admin access required." }, { status: 403 });
-    }
-
-    return NextResponse.json({ queue: getModerationQueue() });
+    sessionUser = verifyToken(token);
   } catch {
     return NextResponse.json({ error: "Invalid session." }, { status: 401 });
+  }
+
+  if (sessionUser.role !== "Admin" && sessionUser.role !== "Faculty") {
+    return NextResponse.json({ error: "Admin access required." }, { status: 403 });
+  }
+
+  try {
+    return NextResponse.json({ queue: await getModerationQueue() });
+  } catch (error) {
+    console.error("Could not load moderation queue.", error);
+    return NextResponse.json({ error: "Admin data is temporarily unavailable." }, { status: 503 });
   }
 }
 
@@ -47,10 +54,14 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: "Provide a valid moderation action." }, { status: 400 });
   }
 
-  const result = db.prepare("UPDATE moderation_items SET status = ? WHERE id = ?").run(status, id);
-  if (result.changes === 0) {
-    return NextResponse.json({ error: "Moderation item not found." }, { status: 404 });
-  }
+  try {
+    if (!(await updateModerationStatus(id, status))) {
+      return NextResponse.json({ error: "Moderation item not found." }, { status: 404 });
+    }
 
-  return NextResponse.json({ queue: getModerationQueue() });
+    return NextResponse.json({ queue: await getModerationQueue() });
+  } catch (error) {
+    console.error("Could not update moderation status.", error);
+    return NextResponse.json({ error: "Moderation is temporarily unavailable." }, { status: 503 });
+  }
 }

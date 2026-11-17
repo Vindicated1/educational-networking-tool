@@ -17,6 +17,10 @@ function getJwtSecret() {
   return "local-development-only-secret";
 }
 
+export function assertJwtSecretConfigured() {
+  getJwtSecret();
+}
+
 export function signToken(user: SessionUser) {
   return jwt.sign(user, getJwtSecret(), { expiresIn: "7d" });
 }

@@ -1,17 +1,37 @@
 import { randomUUID } from "node:crypto";
-import { mkdir, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { COOKIE_NAME, verifyToken } from "@/lib/auth";
 import { defaultCourse } from "@/lib/courses";
-import { db, getResources } from "@/lib/db";
+import {
+  createResource,
+  getResources,
+  removeResourceFile,
+  uploadResourceFile,
+} from "@/lib/db";
 
 const MAX_FILE_BYTES = 10 * 1024 * 1024;
-const UPLOAD_DIR = path.join(process.cwd(), "data", "uploads");
 
 export async function GET() {
-  return NextResponse.json({ resources: getResources() });
+  try {
+    const resources = await getResources();
+    return NextResponse.json({
+      resources: resources.map((resource) => ({
+        id: resource.id,
+        title: resource.title,
+        course: resource.course,
+        session: resource.session,
+        format: resource.format,
+        size: resource.size,
+        uploaded_by: resource.uploaded_by,
+        file_name: resource.file_name,
+      })),
+    });
+  } catch (error) {
+    console.error("Could not load resource metadata.", error);
+    return NextResponse.json({ error: "Resource data is temporarily unavailable." }, { status: 503 });
+  }
 }
 
 export async function POST(request: Request) {
@@ -52,40 +72,45 @@ export async function POST(request: Request) {
   }
 
   const storageKey = `${randomUUID()}${extension}`;
-  await mkdir(UPLOAD_DIR, { recursive: true });
-  await writeFile(path.join(UPLOAD_DIR, storageKey), Buffer.from(await file.arrayBuffer()), { flag: "wx" });
-
+  let uploaded = false;
   try {
-    const result = db
-      .prepare(
-        `INSERT INTO resources (title, course, session, format, size, uploaded_by, file_name, storage_key)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      )
-      .run(
-        title,
-        course,
-        "2026/2027",
-        extension === ".pdf" ? "PDF" : "DOCX",
-        `${(file.size / (1024 * 1024)).toFixed(1)} MB`,
-        sessionUser.role,
-        file.name,
-        storageKey,
-      );
+    const contentType = extension === ".pdf"
+      ? "application/pdf"
+      : "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+    await uploadResourceFile(storageKey, Buffer.from(await file.arrayBuffer()), contentType);
+    uploaded = true;
+
+    const resource = await createResource({
+      title,
+      course,
+      session: "2026/2027",
+      format: extension === ".pdf" ? "PDF" : "DOCX",
+      size: `${(file.size / (1024 * 1024)).toFixed(1)} MB`,
+      uploaded_by: sessionUser.role,
+      file_name: file.name,
+      storage_key: storageKey,
+    });
 
     return NextResponse.json({
       resource: {
-        id: Number(result.lastInsertRowid),
-        title,
-        course,
-        session: "2026/2027",
-        format: extension === ".pdf" ? "PDF" : "DOCX",
-        size: `${(file.size / (1024 * 1024)).toFixed(1)} MB`,
-        uploaded_by: sessionUser.role,
-        file_name: file.name,
+        id: resource.id,
+        title: resource.title,
+        course: resource.course,
+        session: resource.session,
+        format: resource.format,
+        size: resource.size,
+        uploaded_by: resource.uploaded_by,
+        file_name: resource.file_name,
       },
     }, { status: 201 });
   } catch (error) {
-    await unlink(path.join(UPLOAD_DIR, storageKey));
+    if (uploaded) {
+      try {
+        await removeResourceFile(storageKey);
+      } catch (cleanupError) {
+        console.error("Could not remove the uploaded file after a database failure.", cleanupError);
+      }
+    }
     console.error("Could not save uploaded resource metadata.", error);
     return NextResponse.json({ error: "The file could not be saved. Please try again." }, { status: 500 });
   }

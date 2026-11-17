@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { COOKIE_NAME, hashPassword, signToken } from "@/lib/auth";
-import { db, getUserByEmail, serializeUser, type DbUser } from "@/lib/db";
+import { assertJwtSecretConfigured, COOKIE_NAME, hashPassword, signToken } from "@/lib/auth";
+import { createUser, getUserByEmail, serializeUser } from "@/lib/db";
 
 const emailPattern = /(@stu\.ui\.edu\.ng|@dlc\.ui\.edu\.ng|@ui\.edu\.ng)$/i;
 
@@ -22,35 +22,40 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Use an @stu.ui.edu.ng, @dlc.ui.edu.ng, or @ui.edu.ng email address." }, { status: 400 });
   }
 
-  if (getUserByEmail(email)) {
-    return NextResponse.json({ error: "An account with that email already exists." }, { status: 409 });
-  }
-
   const role = email.endsWith("@ui.edu.ng") && !email.endsWith("@stu.ui.edu.ng") && !email.endsWith("@dlc.ui.edu.ng")
     ? "Faculty"
     : "Student";
 
-  const passwordHash = hashPassword(password);
-  const userResult = db
-    .prepare(
-      `INSERT INTO users (full_name, email, password_hash, role) VALUES (?, ?, ?, ?)`
-    )
-    .run(fullName, email, passwordHash, role);
+  let user;
+  let token: string;
+  try {
+    assertJwtSecretConfigured();
+    if (await getUserByEmail(email)) {
+      return NextResponse.json({ error: "An account with that email already exists." }, { status: 409 });
+    }
 
-  const user: DbUser = {
-    id: Number(userResult.lastInsertRowid),
-    full_name: fullName,
-    email,
-    password_hash: passwordHash,
-    role,
-  };
-
-  const token = signToken({
-    userId: Number(userResult.lastInsertRowid),
-    email,
-    fullName,
-    role,
-  });
+    user = await createUser({
+      full_name: fullName,
+      email,
+      password_hash: hashPassword(password),
+      role,
+    });
+    token = signToken({
+      userId: user.id,
+      email,
+      fullName,
+      role,
+    });
+  } catch (error) {
+    if (typeof error === "object" && error !== null && "code" in error && error.code === "23505") {
+      return NextResponse.json({ error: "An account with that email already exists." }, { status: 409 });
+    }
+    console.error("Account registration failed.", error);
+    return NextResponse.json(
+      { error: "Account creation is temporarily unavailable. Check the server database and JWT configuration." },
+      { status: 503 },
+    );
+  }
 
   const response = NextResponse.json({ user: serializeUser(user) });
   response.cookies.set(COOKIE_NAME, token, {

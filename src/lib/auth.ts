@@ -1,5 +1,5 @@
 import bcrypt from "bcryptjs";
-export { COOKIE_NAME, signToken, verifyToken } from "@/lib/session-token";
+export { assertJwtSecretConfigured, COOKIE_NAME, signToken, verifyToken } from "@/lib/session-token";
 export type { SessionUser } from "@/lib/session-token";
 
 export function hashPassword(password: string) {
