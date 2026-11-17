@@ -26,33 +26,56 @@ export async function POST(request: Request) {
     ? "Faculty"
     : "Student";
 
-  let user;
-  let token: string;
   try {
     assertJwtSecretConfigured();
-    if (await getUserByEmail(email)) {
-      return NextResponse.json({ error: "An account with that email already exists." }, { status: 409 });
-    }
+  } catch (error) {
+    console.error("JWT_SECRET is not configured for registration.", error);
+    return NextResponse.json(
+      { error: "JWT_SECRET is missing from the Vercel environment for this deployment. Add it and redeploy." },
+      { status: 503 },
+    );
+  }
 
+  let existingUser;
+  try {
+    existingUser = await getUserByEmail(email);
+  } catch (error) {
+    console.error("Supabase user lookup failed during registration.", error);
+    return NextResponse.json(
+      { error: "Could not read the Supabase users table. Check the Supabase URL/key and run the database migration." },
+      { status: 503 },
+    );
+  }
+  if (existingUser) {
+    return NextResponse.json({ error: "An account with that email already exists." }, { status: 409 });
+  }
+
+  let user;
+  try {
     user = await createUser({
       full_name: fullName,
       email,
       password_hash: hashPassword(password),
       role,
     });
-    token = signToken({
-      userId: user.id,
-      email,
-      fullName,
-      role,
-    });
   } catch (error) {
     if (typeof error === "object" && error !== null && "code" in error && error.code === "23505") {
       return NextResponse.json({ error: "An account with that email already exists." }, { status: 409 });
     }
-    console.error("Account registration failed.", error);
+    console.error("Could not insert the new Supabase user.", error);
     return NextResponse.json(
-      { error: "Account creation is temporarily unavailable. Check the server database and JWT configuration." },
+      { error: "Could not create the account in Supabase. Check the users table, service-role key, and database migration." },
+      { status: 503 },
+    );
+  }
+
+  let token: string;
+  try {
+    token = signToken({ userId: user.id, email, fullName, role });
+  } catch (error) {
+    console.error("Could not create a registration session.", error);
+    return NextResponse.json(
+      { error: "JWT_SECRET could not sign the new account session. Check the Vercel environment and redeploy." },
       { status: 503 },
     );
   }

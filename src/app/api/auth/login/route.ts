@@ -11,14 +11,23 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Email and password are required." }, { status: 400 });
   }
 
-  let user;
   try {
     assertJwtSecretConfigured();
+  } catch (error) {
+    console.error("JWT_SECRET is not configured for login.", error);
+    return NextResponse.json(
+      { error: "JWT_SECRET is missing from the Vercel environment for this deployment. Add it and redeploy." },
+      { status: 503 },
+    );
+  }
+
+  let user;
+  try {
     user = await getUserByEmail(email);
   } catch (error) {
-    console.error("Login service is unavailable.", error);
+    console.error("Supabase user lookup failed during login.", error);
     return NextResponse.json(
-      { error: "Login is temporarily unavailable. Check the server database and JWT configuration." },
+      { error: "Could not read the Supabase users table. Check the Supabase URL/key and run the database migration." },
       { status: 503 },
     );
   }
@@ -41,7 +50,7 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     console.error("Could not create a login session.", error);
-    return NextResponse.json({ error: "Login is temporarily unavailable. Check JWT configuration." }, { status: 503 });
+    return NextResponse.json({ error: "JWT_SECRET could not sign the login session. Check the Vercel environment and redeploy." }, { status: 503 });
   }
 
   const response = NextResponse.json({ user: serializeUser(user) });
