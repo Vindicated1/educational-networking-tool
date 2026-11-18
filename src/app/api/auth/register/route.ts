@@ -63,8 +63,18 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "An account with that email already exists." }, { status: 409 });
     }
     console.error("Could not insert the new Supabase user.", error);
+    const databaseCode =
+      typeof error === "object" &&
+      error !== null &&
+      "code" in error &&
+      typeof error.code === "string" &&
+      /^[A-Z][A-Z0-9]{3,7}$/.test(error.code)
+        ? ` (Supabase error ${error.code})`
+        : "";
     return NextResponse.json(
-      { error: "Could not create the account in Supabase. Check the users table, service-role key, and database migration." },
+      {
+        error: `Could not create the account in Supabase${databaseCode}. Check the users table, service-role key, and database migration.`,
+      },
       { status: 503 },
     );
   }
