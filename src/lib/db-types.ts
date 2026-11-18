@@ -67,3 +67,4 @@ export type ModerationItem = {
 export type NewUser = Pick<DbUser, "full_name" | "email" | "password_hash" | "role">;
 export type NewThread = Pick<DbThread, "title" | "course" | "category" | "author" | "body">;
 export type NewResource = Pick<DbResource, "title" | "course" | "session" | "format" | "size" | "uploaded_by" | "file_name" | "storage_key">;
+export type NewProject = Pick<DbProject, "title" | "summary" | "required_skills" | "owner">;

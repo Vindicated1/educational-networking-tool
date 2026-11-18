@@ -7,6 +7,7 @@ import type {
   DbThread,
   DbUser,
   ModerationItem,
+  NewProject,
   NewResource,
   NewThread,
   NewUser,
@@ -164,6 +165,16 @@ export async function getProjects(): Promise<DbProject[]> {
     .from("projects")
     .select("*")
     .order("created_at", { ascending: false });
+  if (error) throw error;
+  return data;
+}
+
+export async function createProject(input: NewProject): Promise<DbProject> {
+  const { data, error } = await getSupabaseClient()
+    .from("projects")
+    .insert({ ...input, match: 0 })
+    .select("*")
+    .single();
   if (error) throw error;
   return data;
 }

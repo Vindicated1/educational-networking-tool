@@ -3,6 +3,7 @@ import type {
   DbResource,
   DbUser,
   ModerationItem,
+  NewProject,
   NewResource,
   NewThread,
   NewUser,
@@ -97,6 +98,10 @@ export async function downloadResourceFile(storageKey: string) {
 
 export async function getProjects() {
   return (await getBackend()).getProjects();
+}
+
+export async function createProject(input: NewProject) {
+  return (await getBackend()).createProject(input);
 }
 
 export async function projectExists(id: number) {

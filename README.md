@@ -25,6 +25,7 @@ These demo credentials are for local SQLite development only. When using Supabas
 - Password-hashed registration and login with an HTTP-only session cookie.
 - SQLite persistence for local development and Supabase Postgres persistence in deployment.
 - PDF/DOCX uploads up to 10 MB. Local files are stored under `data/uploads`; deployed files use a private Supabase Storage bucket.
+- Project posting and collaborator discovery with skill-based search and project interest.
 - Faculty/admin-only answer verification and moderation access.
 
 The interface uses the University of Ibadan logo published on the official [ui.edu.ng](https://ui.edu.ng) website.

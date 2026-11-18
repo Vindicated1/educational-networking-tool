@@ -11,6 +11,7 @@ import type {
   DbThread,
   DbUser,
   ModerationItem,
+  NewProject,
   NewResource,
   NewThread,
   NewUser,
@@ -329,6 +330,13 @@ export function getResources(): DbResource[] {
 
 export function getProjects(): DbProject[] {
   return db.prepare("SELECT * FROM projects ORDER BY created_at DESC").all() as DbProject[];
+}
+
+export function createProject(input: NewProject): DbProject {
+  const result = db
+    .prepare("INSERT INTO projects (title, summary, required_skills, owner) VALUES (?, ?, ?, ?)")
+    .run(input.title, input.summary, input.required_skills, input.owner);
+  return db.prepare("SELECT * FROM projects WHERE id = ?").get(Number(result.lastInsertRowid)) as DbProject;
 }
 
 export function getModerationQueue(): ModerationItem[] {
