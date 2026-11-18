@@ -55,7 +55,7 @@ export default function RegisterPage() {
       <div className="px-4 py-10 sm:py-16">
       <div className="mx-auto max-w-5xl overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_24px_70px_-35px_rgba(15,35,65,0.3)]">
         <div className="grid md:grid-cols-2">
-          <div className="bg-[#102b50] p-8 text-white sm:p-10">
+          <div className="bg-blue-900 p-8 text-white sm:p-10">
             <p className="text-xs font-bold uppercase tracking-[0.24em] text-blue-200">Join the network</p>
             <h1 className="mt-4 text-3xl font-black">Create your campus profile.</h1>
             <p className="mt-4 text-sm leading-7 text-blue-50">

@@ -1,17 +1,55 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f5f7fa;
-  --foreground: #172338;
-  --ui-blue: #173b72;
+  --background: #ffffff;
+  --foreground: #17243b;
+  --ui-navy: #15366f;
+  --ui-blue: #2f57c7;
+  --ui-pale-blue: #e4f1ff;
   --ui-gold: #d3a633;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-blue-50: #eef4ff;
+  --color-blue-100: #dce8fb;
+  --color-blue-200: #bed2f4;
+  --color-blue-300: #95b4e9;
+  --color-blue-400: #6d93dd;
+  --color-blue-500: #4a75d2;
+  --color-blue-600: #3862ca;
+  --color-blue-700: var(--ui-blue);
+  --color-blue-800: #214b98;
+  --color-blue-900: var(--ui-navy);
+  --color-blue-950: #102951;
+  --color-cyan-50: #eef4ff;
+  --color-cyan-100: #dce8fb;
+  --color-cyan-200: #bed2f4;
+  --color-cyan-300: #95b4e9;
+  --color-cyan-400: #6d93dd;
+  --color-cyan-500: #4a75d2;
+  --color-cyan-600: #3862ca;
+  --color-cyan-700: var(--ui-blue);
+  --color-cyan-800: #214b98;
+  --color-cyan-900: var(--ui-navy);
+  --color-cyan-950: #102951;
+  --color-amber-100: #fff3cc;
+  --color-amber-400: var(--ui-gold);
+  --color-amber-700: #8d6800;
+  --color-slate-50: #f8fafc;
+  --color-slate-100: #f1f5f9;
+  --color-slate-200: #e2e8f0;
+  --color-slate-300: #cbd5e1;
+  --color-slate-400: #94a3b8;
+  --color-slate-500: #64748b;
+  --color-slate-600: #475569;
+  --color-slate-700: #334155;
+  --color-slate-800: #1e293b;
+  --color-slate-900: #17243b;
+  --color-slate-950: #101d32;
+  --font-sans: var(--font-ui-portal);
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
 html {
@@ -22,11 +60,18 @@ body {
   min-height: 100vh;
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  font-family: var(--font-ui-portal), Arial, Helvetica, sans-serif;
+  font-size: 15px;
+  font-weight: 400;
 }
 
 * {
   box-sizing: border-box;
+}
+
+/* Match the portal's restrained, readable heading weight. */
+.font-black {
+  font-weight: 700;
 }
 
 button,
@@ -36,8 +81,8 @@ select {
 }
 
 ::selection {
-  background: #dbeafe;
-  color: #102b50;
+  background: var(--ui-pale-blue);
+  color: var(--ui-navy);
 }
 
 button,

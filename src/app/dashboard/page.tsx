@@ -225,7 +225,7 @@ export default function DashboardPage() {
     <main className="min-h-screen bg-slate-50 text-slate-900">
       <div className="mx-auto grid max-w-7xl gap-6 px-4 py-6 sm:px-6 lg:grid-cols-[1.2fr_0.8fr] lg:px-8">
         <section className="space-y-6">
-          <div className="relative overflow-hidden rounded-2xl bg-[#102b50] p-7 text-white shadow-lg shadow-blue-950/10 sm:p-9">
+          <div className="relative overflow-hidden rounded-2xl bg-blue-900 p-7 text-white shadow-lg shadow-blue-950/10 sm:p-9">
             <div className="absolute -right-10 -top-20 h-56 w-56 rounded-full border-[28px] border-white/5" />
             <p className="relative text-xs font-bold uppercase tracking-[0.18em] text-blue-200">Academic collaboration hub</p>
             <h2 className="relative mt-3 max-w-xl text-3xl font-semibold tracking-tight sm:text-4xl">

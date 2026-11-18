@@ -61,7 +61,7 @@ export default function AppHeader({ children }: { children?: ReactNode }) {
   }
 
   return (
-    <header className="sticky top-0 z-30 border-b border-slate-200/80 bg-white/95 backdrop-blur-xl">
+    <header className="sticky top-0 z-30 border-b border-white/10 bg-blue-900 text-white shadow-sm">
       <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-x-8 gap-y-3 px-4 py-3 sm:px-6 lg:px-8">
         <Link href={user ? "/dashboard" : "/"} aria-label="University of Ibadan Academic Network home" className="shrink-0">
           <Image
@@ -88,8 +88,8 @@ export default function AppHeader({ children }: { children?: ReactNode }) {
                       aria-current={active ? "page" : undefined}
                       className={`whitespace-nowrap rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${
                         active
-                          ? "bg-blue-50 text-blue-900"
-                          : "text-slate-600 hover:bg-slate-100 hover:text-slate-950"
+                          ? "bg-white/15 text-white"
+                          : "text-white/85 hover:bg-white/10 hover:text-white"
                       }`}
                     >
                       {item.label}
@@ -102,7 +102,7 @@ export default function AppHeader({ children }: { children?: ReactNode }) {
               href="/"
               aria-current={pathname === "/" ? "page" : undefined}
               className={`rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${
-                pathname === "/" ? "bg-blue-50 text-blue-900" : "text-slate-600 hover:bg-slate-100"
+                pathname === "/" ? "bg-white/15 text-white" : "text-white/85 hover:bg-white/10 hover:text-white"
               }`}
             >
               Home
@@ -113,27 +113,27 @@ export default function AppHeader({ children }: { children?: ReactNode }) {
         <div className="ml-auto flex items-center gap-2 sm:ml-0">
           {sessionLoaded && children}
           {!sessionLoaded ? (
-            <span aria-label="Loading account status" className="h-9 w-20 animate-pulse rounded-lg bg-slate-100" />
+            <span aria-label="Loading account status" className="h-9 w-20 animate-pulse rounded-lg bg-white/15" />
           ) : user ? (
             <div className="flex items-center gap-2">
               <div className="hidden text-right sm:block">
-                <p className="text-sm font-semibold leading-5 text-slate-900">{user.name}</p>
-                <p className="text-xs text-slate-500">{user.role}</p>
+                <p className="text-sm font-semibold leading-5 text-white">{user.name}</p>
+                <p className="text-xs text-white/70">{user.role}</p>
               </div>
               <button
                 type="button"
                 onClick={handleLogout}
-                className="rounded-lg border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                className="rounded-lg border border-white/35 px-3 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
               >
                 Sign out
               </button>
             </div>
           ) : (
             <>
-              <Link href="/login" className="rounded-lg px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100">
+              <Link href="/login" className="rounded-lg px-3 py-2 text-sm font-semibold text-white transition hover:bg-white/10">
                 Sign in
               </Link>
-              <Link href="/register" className="rounded-lg bg-blue-900 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800">
+              <Link href="/register" className="rounded-lg bg-white px-4 py-2 text-sm font-semibold text-blue-900 shadow-sm transition hover:bg-blue-50">
                 Create account
               </Link>
             </>

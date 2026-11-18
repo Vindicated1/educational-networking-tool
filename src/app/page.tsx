@@ -118,7 +118,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="bg-[#102b50]">
+      <section className="bg-blue-900">
         <div className="mx-auto flex max-w-7xl flex-col justify-between gap-6 px-4 py-10 sm:px-6 md:flex-row md:items-center lg:px-8">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.16em] text-blue-200">Start collaborating</p>
